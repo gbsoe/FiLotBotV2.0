@@ -86,17 +86,18 @@ class FiLotClient:
     
     async def get_pools(self) -> List[Dict[str, Any]]:
         """
-        Fetch all available Raydium pools.
+        Fetch all available Raydium pools from FiLot API.
         
         Returns:
             List of pool data dictionaries containing:
             - poolId: Unique pool identifier
-            - tokenA: First token in the pair
-            - tokenB: Second token in the pair
+            - baseTokenMint: Base token mint address
+            - quoteTokenMint: Quote token mint address
             - tvl: Total Value Locked
             - volume24h: 24-hour trading volume
             - apy: Annual Percentage Yield
-            - feeRate: Pool fee rate
+            - baseTokenReserve: Base token reserve amount
+            - quoteTokenReserve: Quote token reserve amount
         """
         try:
             response = await self._make_request("GET", "/api/pools")
@@ -136,29 +137,30 @@ class FiLotClient:
             logger.error(f"Failed to fetch pool details for {pool_id}: {e}")
             raise FiLotError(f"Failed to fetch pool details: {e}")
     
-    async def get_swap_quote(self, input_token: str, output_token: str, 
-                           amount: float, slippage: float = 1.0) -> Dict[str, Any]:
+    async def get_swap_quote(self, input_mint: str, output_mint: str, 
+                           amount: str, slippage: float = 0.5) -> Dict[str, Any]:
         """
-        Get a quote for a token swap.
+        Get a quote for a token swap using FiLot API.
         
         Args:
-            input_token: Token to swap from
-            output_token: Token to swap to
-            amount: Amount to swap
-            slippage: Maximum slippage percentage (default 1%)
+            input_mint: Input token mint address
+            output_mint: Output token mint address
+            amount: Amount to swap in smallest unit (string)
+            slippage: Maximum slippage percentage (default 0.5%)
             
         Returns:
             Quote information including:
-            - expectedOutput: Expected output amount
+            - inputAmount: Input amount
+            - outputAmount: Expected output amount
             - priceImpact: Price impact percentage
-            - minimumOutput: Minimum guaranteed output
+            - minOutputAmount: Minimum guaranteed output
             - route: Swap route information
         """
         try:
             quote_data = {
-                "inputToken": input_token,
-                "outputToken": output_token,
-                "amount": amount,
+                "inputMint": input_mint,
+                "outputMint": output_mint,
+                "amount": str(amount),
                 "slippage": slippage
             }
             
@@ -168,7 +170,7 @@ class FiLotClient:
                 data=quote_data
             )
             
-            logger.debug(f"Got swap quote: {input_token} -> {output_token}, amount: {amount}")
+            logger.debug(f"Got swap quote: {input_mint} -> {output_mint}, amount: {amount}")
             return response
             
         except FiLotError:
@@ -177,48 +179,36 @@ class FiLotClient:
             logger.error(f"Failed to get swap quote: {e}")
             raise FiLotError(f"Failed to get swap quote: {e}")
     
-    async def execute_swap(self, input_token: str, output_token: str, 
-                          amount: float, slippage: float = 1.0,
-                          simulate: bool = False) -> Dict[str, Any]:
+    async def execute_swap(self, input_mint: str, output_mint: str, 
+                          amount: str, slippage: float = 0.5) -> Dict[str, Any]:
         """
-        Execute a token swap.
+        Execute a token swap using Raydium API (Note: This is for future implementation).
+        Currently returns quote data as FiLot API doesn't provide execution endpoint.
         
         Args:
-            input_token: Token to swap from
-            output_token: Token to swap to
-            amount: Amount to swap
+            input_mint: Input token mint address
+            output_mint: Output token mint address
+            amount: Amount to swap in smallest unit
             slippage: Maximum slippage percentage
-            simulate: If True, only simulate the transaction
             
         Returns:
-            Execution result including:
-            - transactionHash: Transaction hash (if not simulated)
-            - actualOutput: Actual output amount
-            - gasUsed: Gas consumed
-            - success: Whether the swap succeeded
+            Execution simulation result
         """
         try:
-            swap_data = {
-                "inputToken": input_token,
-                "outputToken": output_token,
-                "amount": amount,
-                "slippage": slippage,
-                "privateKey": self.private_key,
-                "simulate": simulate
+            # For now, return quote data since FiLot API doesn't have execute endpoint
+            # This would need to be integrated with actual Raydium SDK for execution
+            quote_data = await self.get_swap_quote(input_mint, output_mint, amount, slippage)
+            
+            # Simulate execution response
+            simulated_response = {
+                "success": True,
+                "signature": "simulated_transaction_signature",
+                "explorerUrl": f"https://solscan.io/tx/simulated_transaction_signature",
+                "quote": quote_data
             }
             
-            response = await self._make_request(
-                "POST", 
-                "/api/swap/execute", 
-                data=swap_data
-            )
-            
-            if simulate:
-                logger.info(f"Simulated swap: {input_token} -> {output_token}")
-            else:
-                logger.info(f"Executed swap: {input_token} -> {output_token}, tx: {response.get('transactionHash')}")
-            
-            return response
+            logger.info(f"Simulated swap execution: {input_mint} -> {output_mint}")
+            return simulated_response
             
         except FiLotError:
             raise

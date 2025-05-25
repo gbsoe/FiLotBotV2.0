@@ -15,7 +15,8 @@ class Config:
     def __init__(self):
         # Required environment variables
         self.TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN", "")
-        self.FILOT_BASE_URL: str = os.getenv("FILOT_BASE_URL", "https://api.filot.io")
+        self.FILOT_BASE_URL: str = os.getenv("FILOT_BASE_URL", "https://filotmicroservice.replit.app")
+        self.RAYDIUM_BASE_URL: str = os.getenv("RAYDIUM_BASE_URL", "https://your-api-domain.com/api/raydium")
         self.SOLANA_PRIVATE_KEY: str = os.getenv("SOLANA_PRIVATE_KEY", "")
         
         # Optional environment variables

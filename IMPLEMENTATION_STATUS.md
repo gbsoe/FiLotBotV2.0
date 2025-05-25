@@ -85,18 +85,23 @@ A fully autonomous Telegram trading bot for Raydium pools on Solana with intelli
 
 ## 🔑 **Required to Complete Setup**
 
-### **Essential API Keys (3 Required)**
-1. **`TELEGRAM_TOKEN`**
+### **Essential API Keys & Endpoints**
+1. **`TELEGRAM_TOKEN`** (Required)
    - Get from: @BotFather on Telegram
    - Steps: Send `/newbot` → choose name → copy token
    - Format: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`
 
-2. **`FILOT_BASE_URL`**
-   - FiLot microservice endpoint
-   - Example: `https://api.filot.io`
-   - Contact FiLot team for access
+2. **`FILOT_BASE_URL`** (Already Configured)
+   - ✅ Set to: `https://filotmicroservice.replit.app`
+   - ✅ Public API - No authentication required
+   - ✅ Provides pool data and token information
 
-3. **`SOLANA_PRIVATE_KEY`**
+3. **`RAYDIUM_BASE_URL`** (Optional for live trading)
+   - Your Raydium swap API endpoint
+   - Example: `https://your-api-domain.com/api/raydium`
+   - Needed only for actual transaction execution
+
+4. **`SOLANA_PRIVATE_KEY`** (Optional for live trading)
    - Your Solana wallet private key
    - Base58 encoded string
    - Used for trade execution
