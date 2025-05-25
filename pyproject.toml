@@ -10,6 +10,6 @@ dependencies = [
     "asyncio>=3.4.3",
     "loguru>=0.7.3",
     "python-dotenv>=1.1.0",
-    "python-telegram-bot>=22.1",
+    "python-telegram-bot==20.7",
     "telegram>=0.0.1",
 ]
