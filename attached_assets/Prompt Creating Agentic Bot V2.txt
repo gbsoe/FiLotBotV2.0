@@ -1,0 +1,48 @@
+You are an AI assistant expert in Python and autonomous agent design. Your task is to scaffold a “Precision Investing with One Button” Telegram bot on Replit, fully in Python, with two layers:
+
+1. **User-Driven Layer**  
+   - A `/invest` command and inline-keyboard interface (via `python-telegram-bot`) that lets a user pick one of the available Raydium pools and, with one click, routes and executes an investment through FiLot’s API.  
+   - Shows pool list, details (APR, TVL), and post-trade confirmation (tx hash, expected APR).
+
+2. **Agentic Layer**  
+   - **Perception Module**: Every 3 hours (or on demand), fetch `/api/pools` → filter for high-APR or low-slippage pools → ingest `volume24h`, `tvl`, `apy`, and on-chain metrics.  
+   - **Decision Module**:  
+     - Rule-based triggers (e.g. “if APR > 15% and TVL > $1M, then notify”), plus a pluggable hook for future RL/LLM-based scoring.  
+     - Risk management: cap per-user daily exposure, track prior investments in a local SQLite DB (or Replit KV) to prevent over-allocations.  
+   - **Action Module**:  
+     - When a trigger fires, automatically call FiLot’s `/api/swap/quote` + `/api/swap/execute` endpoint (simulate or real) for subscribed users.  
+     - Log each action with timestamp, poolId, input/output amounts, slippage, and tx hash.  
+   - **Learning Module (stub)**:  
+     - Provide hooks where, in the future, you can plug in an OpenAI-powered agent or RL loop: ingest past trade outcomes, retrain a simple reward model, and adjust decision thresholds.  
+   - **Notification Module**:  
+     - Push Telegram messages to users: “New high-yield pool detected! Invest now?” with Invest button.  
+     - Summarize daily/weekly performance reports on request (`/report`).
+
+**Implementation Requirements**  
+- Use `asyncio` with `aiohttp` or `httpx.AsyncClient` for all HTTP calls.  
+- Wrap FiLot endpoints in `utils/filot_client.py` with clear methods for each function.  
+- Persist agent state (subscriptions, trade history, config) in a local SQLite DB using `aiosqlite`.  
+- Scheduled tasks via `apscheduler` or built-in asyncio loops.  
+- Logging with `loguru`, metrics to `/api/metrics` for health and performance.  
+- Environment variables in `.env`:  
+  - `FILOT_BASE_URL`  
+  - `SOLANA_PRIVATE_KEY`  
+  - `TELEGRAM_TOKEN`  
+  - `OPENAI_API_KEY` (for future AI)  
+
+**Deliverables**  
+- `requirements.txt`  
+- `.env.example`  
+- `bot.py` (Telegram handlers + command registration)  
+- `agent.py` (agentic loop, scheduler, decision logic)  
+- `utils/filot_client.py` (wrapper for all FiLotMicroservice calls)  
+- `models.py` (ORM or schema definitions for SQLite)  
+- `README.md` with:  
+  - Setup on Replit (install, env vars, run)  
+  - How to test `/invest poolId` and subscribe to agent alerts.  
+  - TODO hooks for RL/LLM integration.  
+
+Start by generating the project structure and stub out each file with clear TODOs, method signatures, and doc-comments describing:  
+- What each agentic component does,  
+- Where decision thresholds live,  
+- How the perception → decision → action flow is wired.
