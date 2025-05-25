@@ -2,39 +2,39 @@
 
 An autonomous Telegram trading bot that provides one-click Raydium pool investments with intelligent monitoring and automated opportunity detection.
 
-## 🚀 Features
+## Features
 
-### 🤖 Autonomous Trading Agent
+### Autonomous Trading Agent
 - **Perception Module**: Real-time pool monitoring every 3 hours
 - **Decision Module**: Rule-based opportunity detection with ML hooks
 - **Action Module**: Automated trade execution and notifications
 - **Learning Module**: Performance analysis and strategy optimization
 
-### 💰 One-Click Investing
+### One-Click Investing
 - Browse high-yield Raydium pools with authentic data
 - Instant investment with optimized position sizing
 - Real-time risk assessment and management
 - Transaction confirmation and tracking
 
-### 🛡️ Risk Management
+### Risk Management
 - Daily exposure limits per user
 - Automated position sizing based on pool risk
 - Slippage protection and price impact analysis
 - Stop-loss and take-profit capabilities
 
-### 📊 Smart Monitoring
+### Smart Monitoring
 - 24/7 pool analysis and opportunity detection
 - Market condition assessment using authentic Raydium data
 - Liquidity and stability scoring
 - Real-time notifications for high-yield opportunities
 
-### 📈 Performance Tracking
+### Performance Tracking
 - Portfolio performance reports
 - Trade history and analytics
 - Daily and weekly summaries
 - Risk-adjusted returns analysis
 
-## 🏗️ Architecture
+## Architecture
 
 ### Two-Layer Design
 1. **User-Driven Layer**: Manual investment interface with interactive buttons
@@ -47,21 +47,21 @@ An autonomous Telegram trading bot that provides one-click Raydium pool investme
 - **Trades**: Complete transaction history
 - **Opportunities**: Detected investment opportunities
 
-## 🔌 API Integration
+## API Integration
 
 ### FiLot Microservice (Pool Data)
 - **Endpoint**: `https://filotmicroservice.replit.app`
 - **Authentication**: None required (public API)
 - **Features**: Real-time pool data, token information, TVL, APY metrics
-- **Status**: ✅ Ready to use with authentic Raydium data
+- **Status**: Ready to use with authentic Raydium data
 
 ### Raydium Swap API (Transaction Execution)
 - **Endpoint**: Configurable via `RAYDIUM_BASE_URL`
 - **Authentication**: Server-side private key management
 - **Features**: Swap quotes, transaction building, execution
-- **Status**: ⚙️ Configure your endpoint for live trading
+- **Status**: Configure your endpoint for live trading
 
-## ⚡ Quick Start
+## Quick Start
 
 ### 1. Get Telegram Bot Token
 - Message @BotFather on Telegram
@@ -91,7 +91,7 @@ python main.py
 - Use `/invest` for manual trading with real quotes
 - Use `/subscribe` for autonomous alerts
 
-## 📱 Bot Commands
+## Bot Commands
 
 ### Investment Commands
 - `/start` - Initialize your account and welcome message
@@ -108,7 +108,7 @@ python main.py
 - `/report` - View trading performance and analytics
 - `/status` - Check bot and agent health monitoring
 
-## ⚙️ Configuration
+## Configuration
 
 ### Required Environment Variables
 ```env
@@ -136,7 +136,7 @@ OPENAI_API_KEY=your_openai_api_key
 - **Pool Browsing**: Use `/pools` command to see paginated authentic Raydium data
 - **Investment Flow**: Test complete quote→execute flow with retry mechanisms
 
-## 🛡️ Enhanced Safety Features
+## Enhanced Safety Features
 
 ### Multi-Layer Protection
 - **Risk Assessment**: Automatic pool evaluation using authentic TVL, volume, and APY data
@@ -152,7 +152,7 @@ OPENAI_API_KEY=your_openai_api_key
 - **Error Recovery**: Comprehensive error handling with user-friendly messages
 - **Health Monitoring**: Automatic API connectivity and system performance checks
 
-## 📊 Performance Metrics
+## Performance Metrics
 
 - **Real-time Pool Data**: Updated every API call from FiLot
 - **Autonomous Monitoring**: Every 3 hours
@@ -160,7 +160,7 @@ OPENAI_API_KEY=your_openai_api_key
 - **Uptime**: 100% with FiLot public API
 - **Safety**: Multiple validation layers
 
-## 🔧 Technical Details
+## Technical Details
 
 ### Dependencies
 ```
@@ -186,7 +186,7 @@ python-dotenv==1.0.0
 └── .env.example           # Configuration template
 ```
 
-## 🚀 Getting Started Immediately
+## Getting Started Immediately
 
 ### Complete Setup Instructions
 
@@ -222,7 +222,7 @@ python-dotenv==1.0.0
 
 The bot connects to authentic Raydium data immediately. All pool information, quotes, and risk assessments use real market data from the FiLot microservice.
 
-## 📝 License
+## License
 
 MIT License - see LICENSE file for details.
 
