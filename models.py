@@ -113,10 +113,13 @@ CREATE TABLE IF NOT EXISTS users (
     is_active BOOLEAN DEFAULT 1
 );
 
--- Subscriptions table
+-- Subscriptions table (Enhanced with pool_id and mode)
 CREATE TABLE IF NOT EXISTS subscriptions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id INTEGER NOT NULL,
+    telegram_id INTEGER NOT NULL,
+    pool_id TEXT,
+    mode TEXT DEFAULT 'demo',
     status TEXT NOT NULL DEFAULT 'disabled',
     min_apr_threshold REAL DEFAULT 15.0,
     max_risk_level REAL DEFAULT 0.5,

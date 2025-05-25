@@ -1,219 +1,200 @@
 """
-Risk management utilities for the trading bot.
-Implements exposure limits, position sizing, and risk assessment.
+Risk management utilities for daily trading limits and exposure controls.
 """
 
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional, Tuple
+from datetime import datetime, date
+from typing import Optional
 from loguru import logger
-from models import Trade, Subscription, Pool
 from utils.database import DatabaseManager
+
 
 class RiskManager:
     """
-    Manages trading risk through exposure limits and position sizing.
+    Risk management system for controlling user exposure and daily limits.
     """
     
     def __init__(self, db_manager: DatabaseManager, config):
         self.db_manager = db_manager
         self.config = config
     
-    async def check_daily_exposure(self, user_id: int, proposed_amount: float) -> Tuple[bool, str]:
+    async def check_daily_limit(self, user_id: int, amount: float) -> bool:
         """
-        Check if a proposed trade would exceed daily exposure limits.
+        Check if a user can make a trade within their daily limit.
         
         Args:
-            user_id: User ID
-            proposed_amount: Proposed investment amount
+            user_id: User identifier
+            amount: Proposed trade amount
             
         Returns:
-            Tuple of (is_allowed, reason)
+            True if trade is within daily limit, False otherwise
         """
         try:
-            current_exposure = await self.db_manager.get_user_daily_exposure(user_id)
-            subscription = await self.db_manager.get_subscription(user_id)
+            today = date.today()
             
-            # Get user-specific limit or use default
-            if subscription:
-                daily_limit = subscription.max_daily_investment
-            else:
-                daily_limit = self.config.MAX_DAILY_EXPOSURE_USD
+            # Get today's total trades for this user
+            query = """
+                SELECT COALESCE(SUM(input_amount), 0) as daily_total
+                FROM trades 
+                WHERE user_id = ? AND DATE(created_at) = ?
+                AND status IN ('executed', 'pending')
+            """
             
-            total_exposure = current_exposure + proposed_amount
+            async with self.db_manager.get_connection() as conn:
+                cursor = await conn.execute(query, (user_id, today.isoformat()))
+                result = await cursor.fetchone()
+                daily_total = result['daily_total'] if result else 0.0
             
-            if total_exposure > daily_limit:
-                remaining = daily_limit - current_exposure
-                return False, f"Daily limit exceeded. Current: ${current_exposure:.2f}, Limit: ${daily_limit:.2f}, Remaining: ${remaining:.2f}"
+            # Get user's daily limit (default from config if not set)
+            user_limit = await self._get_user_daily_limit(user_id)
             
-            return True, f"Within daily limit. Total exposure would be: ${total_exposure:.2f}/{daily_limit:.2f}"
+            proposed_total = daily_total + amount
+            
+            if proposed_total > user_limit:
+                logger.warning(f"Daily limit exceeded for user {user_id}: {proposed_total} > {user_limit}")
+                return False
+            
+            logger.info(f"Daily limit check passed for user {user_id}: {proposed_total}/{user_limit}")
+            return True
             
         except Exception as e:
-            logger.error(f"Error checking daily exposure: {e}")
-            return False, "Unable to verify exposure limits"
+            logger.error(f"Error checking daily limit for user {user_id}: {e}")
+            return False  # Fail safe - reject if we can't verify
     
-    async def check_single_investment_limit(self, proposed_amount: float) -> Tuple[bool, str]:
+    async def _get_user_daily_limit(self, user_id: int) -> float:
         """
-        Check if a single investment exceeds maximum limits.
+        Get user's daily limit from subscription settings or default.
         
         Args:
-            proposed_amount: Proposed investment amount
+            user_id: User identifier
             
         Returns:
-            Tuple of (is_allowed, reason)
-        """
-        max_single = self.config.MAX_SINGLE_INVESTMENT_USD
-        
-        if proposed_amount > max_single:
-            return False, f"Single investment limit exceeded. Proposed: ${proposed_amount:.2f}, Max: ${max_single:.2f}"
-        
-        return True, f"Within single investment limit: ${proposed_amount:.2f}/{max_single:.2f}"
-    
-    async def assess_pool_risk(self, pool: Pool) -> Dict[str, float]:
-        """
-        Assess the risk level of a pool based on various metrics.
-        
-        Args:
-            pool: Pool to assess
-            
-        Returns:
-            Dictionary containing risk metrics
-        """
-        risk_metrics = {
-            "tvl_risk": self._calculate_tvl_risk(pool.tvl),
-            "volume_risk": self._calculate_volume_risk(pool.volume_24h, pool.tvl),
-            "apy_risk": self._calculate_apy_risk(pool.apy),
-            "overall_risk": 0.0
-        }
-        
-        # Calculate weighted overall risk score (0-1, where 1 is highest risk)
-        weights = {"tvl_risk": 0.4, "volume_risk": 0.3, "apy_risk": 0.3}
-        
-        risk_metrics["overall_risk"] = sum(
-            risk_metrics[metric] * weight 
-            for metric, weight in weights.items()
-        )
-        
-        return risk_metrics
-    
-    def _calculate_tvl_risk(self, tvl: float) -> float:
-        """Calculate risk based on Total Value Locked."""
-        if tvl >= 10_000_000:  # $10M+
-            return 0.1  # Very low risk
-        elif tvl >= 1_000_000:  # $1M+
-            return 0.3  # Low risk
-        elif tvl >= 100_000:   # $100K+
-            return 0.6  # Medium risk
-        else:
-            return 0.9  # High risk
-    
-    def _calculate_volume_risk(self, volume_24h: float, tvl: float) -> float:
-        """Calculate risk based on trading volume relative to TVL."""
-        if tvl == 0:
-            return 1.0  # Maximum risk if no TVL
-        
-        volume_ratio = volume_24h / tvl
-        
-        if volume_ratio >= 0.5:    # High volume/TVL ratio
-            return 0.2  # Low risk
-        elif volume_ratio >= 0.1:  # Moderate volume
-            return 0.4  # Medium-low risk
-        elif volume_ratio >= 0.01: # Low volume
-            return 0.7  # Medium-high risk
-        else:
-            return 0.9  # High risk (very low volume)
-    
-    def _calculate_apy_risk(self, apy: float) -> float:
-        """Calculate risk based on APY (higher APY often means higher risk)."""
-        if apy <= 5:      # Conservative yields
-            return 0.2
-        elif apy <= 15:   # Moderate yields
-            return 0.4
-        elif apy <= 50:   # High yields
-            return 0.6
-        elif apy <= 100:  # Very high yields
-            return 0.8
-        else:             # Extremely high yields
-            return 1.0
-    
-    async def calculate_position_size(self, user_id: int, pool: Pool, 
-                                    max_risk_level: float = 0.5) -> Optional[float]:
-        """
-        Calculate appropriate position size based on risk assessment.
-        
-        Args:
-            user_id: User ID
-            pool: Pool to invest in
-            max_risk_level: Maximum acceptable risk level (0-1)
-            
-        Returns:
-            Recommended position size in USD, or None if too risky
+            Daily limit amount
         """
         try:
-            # Get user's subscription settings
-            subscription = await self.db_manager.get_subscription(user_id)
-            if not subscription:
-                return None
+            query = """
+                SELECT max_daily_investment 
+                FROM subscriptions 
+                WHERE user_id = ? AND status = 'active'
+                ORDER BY created_at DESC LIMIT 1
+            """
             
-            # Assess pool risk
-            risk_metrics = await self.assess_pool_risk(pool)
+            async with self.db_manager.get_connection() as conn:
+                cursor = await conn.execute(query, (user_id,))
+                result = await cursor.fetchone()
+                
+                if result and result['max_daily_investment']:
+                    return float(result['max_daily_investment'])
+                
+                # Return default from config
+                return getattr(self.config, 'MAX_DAILY_EXPOSURE_USD', 1000.0)
+                
+        except Exception as e:
+            logger.error(f"Error getting daily limit for user {user_id}: {e}")
+            return 1000.0  # Conservative default
+    
+    async def calculate_position_size(self, pool_data: dict, user_limit: float) -> float:
+        """
+        Calculate recommended position size based on pool risk and user limits.
+        
+        Args:
+            pool_data: Pool information including TVL, volume, etc.
+            user_limit: User's maximum investment amount
             
-            if risk_metrics["overall_risk"] > max_risk_level:
-                logger.info(f"Pool {pool.pool_id} too risky: {risk_metrics['overall_risk']:.2f} > {max_risk_level}")
-                return None
+        Returns:
+            Recommended position size
+        """
+        try:
+            # Basic position sizing logic - TODO: enhance with more sophisticated risk metrics
+            tvl = pool_data.get('tvl', 0)
+            volume_24h = pool_data.get('volume24h', 0)
             
-            # Calculate base position size
-            base_size = subscription.max_daily_investment * 0.1  # Start with 10% of daily limit
+            # Risk score based on TVL and volume
+            if tvl < 100000:  # Less than $100k TVL
+                risk_multiplier = 0.1  # Very conservative
+            elif tvl < 1000000:  # Less than $1M TVL
+                risk_multiplier = 0.3
+            else:
+                risk_multiplier = 0.5  # Up to 50% of limit for large pools
             
-            # Adjust based on risk (lower risk = larger position)
-            risk_factor = 1.0 - risk_metrics["overall_risk"]
-            adjusted_size = base_size * (0.5 + risk_factor * 0.5)  # Scale between 50-100% of base
+            # Adjust for volume/TVL ratio (liquidity indicator)
+            if tvl > 0:
+                volume_ratio = volume_24h / tvl
+                if volume_ratio > 0.5:  # High turnover
+                    risk_multiplier *= 1.2  # Slightly more aggressive
+                elif volume_ratio < 0.1:  # Low turnover
+                    risk_multiplier *= 0.8  # More conservative
             
-            # Check against single investment limit
-            max_single = self.config.MAX_SINGLE_INVESTMENT_USD
-            final_size = min(adjusted_size, max_single)
+            recommended_size = min(user_limit * risk_multiplier, user_limit)
             
-            # Check daily exposure
-            current_exposure = await self.db_manager.get_user_daily_exposure(user_id)
-            remaining_exposure = subscription.max_daily_investment - current_exposure
-            
-            if final_size > remaining_exposure:
-                final_size = max(0, remaining_exposure)
-            
-            logger.info(f"Calculated position size for {pool.pool_id}: ${final_size:.2f} (risk: {risk_metrics['overall_risk']:.2f})")
-            return final_size if final_size > 10 else None  # Minimum $10 investment
+            logger.info(f"Calculated position size: {recommended_size} (limit: {user_limit}, multiplier: {risk_multiplier})")
+            return recommended_size
             
         except Exception as e:
             logger.error(f"Error calculating position size: {e}")
-            return None
+            return min(100.0, user_limit * 0.1)  # Very conservative fallback
     
-    async def should_execute_trade(self, user_id: int, pool: Pool, amount: float) -> Tuple[bool, str]:
+    async def assess_pool_risk(self, pool_data: dict) -> dict:
         """
-        Comprehensive check if a trade should be executed.
+        Assess risk level of a pool based on various metrics.
         
         Args:
-            user_id: User ID
-            pool: Pool to trade
-            amount: Investment amount
+            pool_data: Pool information
             
         Returns:
-            Tuple of (should_execute, reason)
+            Risk assessment dictionary
         """
-        # Check single investment limit
-        single_check, single_reason = await self.check_single_investment_limit(amount)
-        if not single_check:
-            return False, single_reason
-        
-        # Check daily exposure
-        exposure_check, exposure_reason = await self.check_daily_exposure(user_id, amount)
-        if not exposure_check:
-            return False, exposure_reason
-        
-        # Assess pool risk
-        risk_metrics = await self.assess_pool_risk(pool)
-        subscription = await self.db_manager.get_subscription(user_id)
-        
-        if subscription and risk_metrics["overall_risk"] > subscription.max_risk_level:
-            return False, f"Pool risk too high: {risk_metrics['overall_risk']:.2f} > {subscription.max_risk_level:.2f}"
-        
-        # All checks passed
-        return True, f"Trade approved. Risk: {risk_metrics['overall_risk']:.2f}, Amount: ${amount:.2f}"
+        try:
+            tvl = pool_data.get('tvl', 0)
+            volume_24h = pool_data.get('volume24h', 0)
+            apy = pool_data.get('apy', 0)
+            
+            risk_score = 0.0
+            risk_factors = []
+            
+            # TVL-based risk
+            if tvl < 100000:
+                risk_score += 0.4
+                risk_factors.append("Low TVL")
+            elif tvl < 1000000:
+                risk_score += 0.2
+                risk_factors.append("Medium TVL")
+            
+            # APY-based risk (very high APY can indicate high risk)
+            if apy > 100:
+                risk_score += 0.3
+                risk_factors.append("Very high APY")
+            elif apy > 50:
+                risk_score += 0.2
+                risk_factors.append("High APY")
+            
+            # Volume/TVL ratio
+            if tvl > 0:
+                volume_ratio = volume_24h / tvl
+                if volume_ratio < 0.05:  # Very low trading activity
+                    risk_score += 0.2
+                    risk_factors.append("Low liquidity")
+            
+            # Normalize risk score to 0-1 range
+            risk_score = min(risk_score, 1.0)
+            
+            risk_level = "Low"
+            if risk_score > 0.7:
+                risk_level = "High"
+            elif risk_score > 0.4:
+                risk_level = "Medium"
+            
+            return {
+                'risk_score': risk_score,
+                'risk_level': risk_level,
+                'risk_factors': risk_factors,
+                'recommended': risk_score < 0.6
+            }
+            
+        except Exception as e:
+            logger.error(f"Error assessing pool risk: {e}")
+            return {
+                'risk_score': 1.0,
+                'risk_level': "High",
+                'risk_factors': ["Assessment failed"],
+                'recommended': False
+            }

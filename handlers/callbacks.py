@@ -273,7 +273,7 @@ Select an investment amount below:
             await query.edit_message_text("❌ Unable to prepare investment. Please try again.")
     
     async def _handle_confirm_invest(self, query, context: ContextTypes.DEFAULT_TYPE, callback_data: str):
-        """Handle investment confirmation and execution."""
+        """Handle investment confirmation and execution with enhanced FiLot integration."""
         parts = callback_data.split(":")
         pool_id = parts[1]
         amount = float(parts[2])
