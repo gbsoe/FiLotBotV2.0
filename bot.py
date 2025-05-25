@@ -14,7 +14,8 @@ from utils.filot_client import FiLotClient
 from utils.risk_manager import RiskManager
 from handlers.user_commands import UserCommandHandlers
 from handlers.callbacks import CallbackHandlers
-from telegram.ext import Application
+from telegram.ext import Application, ContextTypes, CommandHandler, CallbackQueryHandler
+from telegram import Update
 
 class TelegramBot:
     """
