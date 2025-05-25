@@ -74,27 +74,39 @@ cp .env.example .env
 # Edit .env and add your TELEGRAM_TOKEN
 ```
 
-### 3. Run the Bot
+### 3. Test API Connection (Optional)
+```bash
+python utils/filot_client.py
+```
+
+### 4. Run the Bot
 ```bash
 python main.py
 ```
 
-### 4. Start Trading
+### 5. Start Trading
 - Find your bot on Telegram
 - Send `/start` to begin
-- Use `/invest` for manual trading
+- Use `/pools` to browse authentic Raydium pools
+- Use `/invest` for manual trading with real quotes
 - Use `/subscribe` for autonomous alerts
 
 ## 📱 Bot Commands
 
+### Investment Commands
 - `/start` - Initialize your account and welcome message
-- `/invest` - Browse and invest in Raydium pools
-- `/pools` - View all available pools with metrics
-- `/subscribe` - Enable autonomous trading notifications
-- `/settings` - Customize your investment preferences
-- `/report` - View your trading performance
+- `/pools` - Browse authentic Raydium pools with pagination (5 per page)
+- `/invest` - Quick access to investment interface
 - `/balance` - Check your wallet balance
-- `/status` - Bot and agent health status
+
+### Autonomous Trading
+- `/subscribe` - Enable autonomous opportunity alerts
+- `/unsubscribe` - Disable autonomous trading
+- `/settings` - Customize risk tolerance and daily limits
+
+### Reporting & Status
+- `/report` - View trading performance and analytics
+- `/status` - Check bot and agent health monitoring
 
 ## ⚙️ Configuration
 
@@ -115,25 +127,30 @@ OPENAI_API_KEY=your_openai_api_key
 ```
 
 ### Trading Modes
-- **Data-Only Mode**: View pools and get quotes (TELEGRAM_TOKEN only)
-- **Full Trading Mode**: Execute real transactions (requires RAYDIUM_BASE_URL + SOLANA_PRIVATE_KEY)
-- **Simulation Mode**: Test all features safely (default setting)
+- **Data-Only Mode**: View authentic pools and get real quotes (TELEGRAM_TOKEN only)
+- **Full Trading Mode**: Execute actual transactions (requires RAYDIUM_BASE_URL + SOLANA_PRIVATE_KEY)
+- **Simulation Mode**: Test all features safely with real data (default setting)
 
-## 🛡️ Safety Features
+### Testing & Development
+- **Smoke Test**: Run `python utils/filot_client.py` to test FiLot API connectivity
+- **Pool Browsing**: Use `/pools` command to see paginated authentic Raydium data
+- **Investment Flow**: Test complete quote→execute flow with retry mechanisms
+
+## 🛡️ Enhanced Safety Features
 
 ### Multi-Layer Protection
-- **Risk Assessment**: TVL, volume, and stability analysis using authentic data
-- **Exposure Limits**: Daily and per-transaction investment caps
-- **Slippage Protection**: Configurable maximum slippage limits
-- **User Confirmation**: All trades require explicit approval
-- **Simulation Mode**: Test without real transactions
-- **Error Recovery**: Comprehensive error handling and retry logic
+- **Risk Assessment**: Automatic pool evaluation using authentic TVL, volume, and APY data
+- **Daily Limits**: Configurable per-user exposure caps with database tracking
+- **Position Sizing**: Smart calculation based on pool risk metrics
+- **Retry Mechanisms**: Exponential backoff for all API calls
+- **User Confirmation**: Required approval for all investment actions
+- **Simulation Mode**: Test complete flows with real data (default setting)
 
-### Health Monitoring
-- Real-time API connectivity checks
-- System performance monitoring
-- Database integrity validation
-- User activity tracking
+### Advanced Risk Management
+- **Real-time Pool Analysis**: Continuous monitoring of liquidity and stability
+- **Trade Validation**: Multi-step verification before execution
+- **Error Recovery**: Comprehensive error handling with user-friendly messages
+- **Health Monitoring**: Automatic API connectivity and system performance checks
 
 ## 📊 Performance Metrics
 
@@ -171,13 +188,39 @@ python-dotenv==1.0.0
 
 ## 🚀 Getting Started Immediately
 
-1. **Install dependencies**: Already configured in environment
-2. **Get Telegram token**: Message @BotFather
-3. **Add token to .env**: Only requirement for basic functionality
-4. **Run the bot**: `python main.py`
-5. **Test with real data**: Bot connects to FiLot API automatically
+### Complete Setup Instructions
 
-The bot works immediately with authentic Raydium pool data from the FiLot microservice. Add your trading API endpoint when ready for live execution.
+1. **Set Required Environment Variables in Replit Secrets:**
+   - Go to your Replit project settings
+   - Add these secrets:
+     - `TELEGRAM_TOKEN`: Get from @BotFather on Telegram
+     - `FILOT_BASE_URL`: Already set to `https://filotmicroservice.replit.app`
+     - `SOLANA_PRIVATE_KEY`: Your Solana wallet private key
+
+2. **Test API Connection:**
+   ```bash
+   python utils/filot_client.py
+   ```
+   This will show the first three pool IDs from authentic FiLot data.
+
+3. **Run the Bot:**
+   ```bash
+   python main.py
+   ```
+
+4. **Start Using Commands:**
+   - `/pools` - Browse authentic Raydium pools with pagination
+   - `/invest poolId` - Invest in specific pools with real quotes
+   - `/subscribe poolId` - Enable autonomous alerts for specific pools
+
+### How to Use Enhanced Features
+
+- **Pools Command**: Shows 5 authentic pools per page with real TVL/APY data
+- **Investment Flow**: Get real quotes → confirm amount → execute with retry logic
+- **Risk Management**: Automatic daily limit checking and position sizing
+- **Autonomous Mode**: Set pool subscriptions with demo/live modes
+
+The bot connects to authentic Raydium data immediately. All pool information, quotes, and risk assessments use real market data from the FiLot microservice.
 
 ## 📝 License
 
