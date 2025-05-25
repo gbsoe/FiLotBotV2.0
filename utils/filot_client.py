@@ -6,8 +6,32 @@ Handles all external API calls for pool data and trading operations.
 import aiohttp
 import asyncio
 from typing import Dict, List, Optional, Any
+from functools import wraps
 from loguru import logger
 from config import Config
+
+
+def retry_on_failure(max_retries: int = 3, delay: float = 1.0):
+    """
+    Decorator to add retry logic to async functions.
+    """
+    def decorator(func):
+        @wraps(func)
+        async def wrapper(*args, **kwargs):
+            last_exception = None
+            for attempt in range(max_retries):
+                try:
+                    return await func(*args, **kwargs)
+                except Exception as e:
+                    last_exception = e
+                    if attempt < max_retries - 1:
+                        logger.warning(f"Attempt {attempt + 1} failed for {func.__name__}: {e}. Retrying in {delay}s...")
+                        await asyncio.sleep(delay * (attempt + 1))  # Exponential backoff
+                    else:
+                        logger.error(f"All {max_retries} attempts failed for {func.__name__}")
+            raise last_exception if last_exception else Exception("Unknown error occurred")
+        return wrapper
+    return decorator
 
 class FiLotError(Exception):
     """Custom exception for FiLot API errors."""
@@ -84,7 +108,8 @@ class FiLotClient:
             logger.error(f"Unexpected error in API request: {e}")
             raise FiLotError(f"Request failed: {e}")
     
-    async def get_pools(self) -> List[Dict[str, Any]]:
+    @retry_on_failure(max_retries=3, delay=1.0)
+    async def list_pools(self) -> List[Dict[str, Any]]:
         """
         Fetch all available Raydium pools from FiLot API.
         
@@ -112,7 +137,8 @@ class FiLotClient:
             logger.error(f"Failed to fetch pools: {e}")
             raise FiLotError(f"Failed to fetch pools: {e}")
     
-    async def get_pool_details(self, pool_id: str) -> Dict[str, Any]:
+    @retry_on_failure(max_retries=3, delay=1.0)
+    async def get_pool(self, pool_id: str) -> Dict[str, Any]:
         """
         Get detailed information for a specific pool.
         
@@ -137,7 +163,8 @@ class FiLotClient:
             logger.error(f"Failed to fetch pool details for {pool_id}: {e}")
             raise FiLotError(f"Failed to fetch pool details: {e}")
     
-    async def get_swap_quote(self, input_mint: str, output_mint: str, 
+    @retry_on_failure(max_retries=3, delay=1.0)
+    async def post_swap_quote(self, input_mint: str, output_mint: str, 
                            amount: str, slippage: float = 0.5) -> Dict[str, Any]:
         """
         Get a quote for a token swap using FiLot API.
@@ -289,3 +316,32 @@ class FiLotClient:
             return True
         except:
             return False
+
+
+if __name__ == "__main__":
+    """
+    Smoke test for FiLot client - prints first three pool IDs.
+    """
+    import os
+    from config import Config
+    
+    async def smoke_test():
+        config = Config()
+        
+        async with FiLotClient(config) as client:
+            try:
+                pools = await client.list_pools()
+                print(f"Successfully fetched {len(pools)} pools from FiLot API")
+                
+                if pools:
+                    print("First three pool IDs:")
+                    for i, pool in enumerate(pools[:3]):
+                        pool_id = pool.get('poolId', 'Unknown')
+                        print(f"{i+1}. {pool_id}")
+                else:
+                    print("No pools found")
+                    
+            except Exception as e:
+                print(f"Smoke test failed: {e}")
+    
+    asyncio.run(smoke_test())

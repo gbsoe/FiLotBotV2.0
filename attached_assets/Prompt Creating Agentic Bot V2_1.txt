@@ -1,0 +1,44 @@
+You’re an AI assistant working within an existing Replit project called “Precision Investing with One Button.” Do NOT recreate the project structure; instead, open and modify the following existing files in place:
+
+1. **Environment & Configuration in `bot.py` (or `main.py`):**  
+   - At the top, add a startup check that reads `TELEGRAM_TOKEN`, `FILOT_BASE_URL`, and `SOLANA_PRIVATE_KEY` from `os.environ`. If any are missing, log an error and exit.  
+   - Commit these changes and update `.env.example` (which already exists) to include these keys with placeholder values.
+
+2. **FiLot Client in `utils/filot_client.py`:**  
+   - Fill in the stub methods `list_pools()`, `get_pool(pool_id)`, `post_swap_quote()`, and `execute_swap()`, using `httpx.AsyncClient`.  
+   - Wrap each call with retry logic (use `tenacity` or a small custom decorator).  
+   - At the bottom of the file add a `if __name__ == "__main__":` smoke-test that prints the first three pool IDs via `list_pools()`.
+
+3. **Telegram Handlers in `bot.py` / `handlers.py`:**  
+   - Find the existing `/pools` command handler and replace its TODO with a call to `filot_client.list_pools()`. Format results into pages of five pools each, sending an inline keyboard.  
+   - Locate the invest callback (e.g. `def invest_callback(update, context)`) and implement: parse `pool_id`, call `post_swap_quote()`, then `execute_swap()`, and reply with the tx hash and APR. Add try/catch around both calls to send a user-friendly error if something fails.
+
+4. **Database & Risk Controls in `models.py` and `utils/database.py`:**  
+   - If `models.py` already defines tables, append a `Subscription` table (fields: `id`, `user_id`, `telegram_id`, `pool_id`, `mode`).  
+   - In `utils/database.py`, ensure there’s an `init_db()` function that creates missing tables on startup.  
+   - Create `utils/risk_manager.py` with a function `check_daily_limit(user_id, amount)` that reads today’s total from `Trade` table and returns True/False.
+
+5. **Agentic Scheduler in `agent.py`:**  
+   - Confirm there’s an async loop or scheduler. If not, add an `async def schedule_agent()` that runs every 3 hours using `asyncio.sleep`.  
+   - Inside that loop, call `list_pools()`, filter pools by APR and TVL from a config file (or environment), query `Subscription` for matching users, and for each:
+       - Always call `post_swap_quote()`.  
+       - If `mode == 'live'`, also call `execute_swap()`; otherwise skip execution.  
+       - Send Telegram messages summarizing the quote and (if live) the tx hash.
+
+6. **Testing & CI:**  
+   - Under the existing `tests/` folder, add or update `test_filot_client.py` to mock `httpx` and verify retries.  
+   - Add `test_risk_manager.py` for daily-cap logic.  
+   - Add an integration test `test_invest_flow.py` that mocks both pool listing and swap endpoints and runs through the `/pools` → invest flow.
+
+7. **Logging & Health Endpoint:**  
+   - In `bot.py`, add a FastAPI (or simple `http.server`) health check at `/health` that returns JSON `{"status":"ok"}`.  
+   - Ensure all new code uses the existing logger (or switch to `loguru` if already present) to capture errors, decision triggers, and executed trades.
+
+8. **Documentation:**  
+   - Update the existing `README.md` to document:
+     - How to set the required env vars in Replit secrets.
+     - How to run the smoke-test (`python utils/filot_client.py`).
+     - How to invoke `/pools`, `/invest poolId`, and `/subscribe poolId`.
+     - How to run tests (`pytest tests/`).
+
+Make only in-place edits—do not delete or re-generate files you don’t need to touch. Preserve any existing business logic or helper functions, adding your enhancements around them. Use clear TODO comments only where more detailed logic (e.g. risk thresholds, config values) will be filled in later.```
