@@ -1,7 +1,7 @@
 # Precision Investing Telegram Bot - Complete Implementation
 
 ## Project Overview
-A fully autonomous Telegram trading bot for Raydium pools on Solana with intelligent monitoring and one-click investment capabilities. Built with dual API integration: FiLot microservice for authentic pool data and Raydium SDK for transaction execution. Features two-layer architecture: user-driven manual trading and autonomous agent capabilities.
+A fully autonomous Telegram trading bot for Raydium pools on Solana with intelligent monitoring and one-click investment capabilities. Built with dual API integration: FiLot microservice for authentic pool data and professional Helius RPC infrastructure. Features two-layer architecture: user-driven manual trading and autonomous agent capabilities.
 
 ## Complete Implementation Details
 
@@ -96,6 +96,7 @@ A fully autonomous Telegram trading bot for Raydium pools on Solana with intelli
 - **Default Values**: Conservative settings for new users
 - **Validation**: Required parameter checking on startup
 - **Safety Settings**: Simulation mode and autonomous trading toggles
+- **Professional Infrastructure**: Helius RPC integration for enterprise-grade Solana connectivity
 
 ## Required to Complete Setup
 
@@ -105,23 +106,36 @@ A fully autonomous Telegram trading bot for Raydium pools on Solana with intelli
    - Steps: Send `/newbot` → choose name → copy token
    - Format: `123456789:ABCdefGHIjklMNOpqrsTUVwxyz`
 
-2. **`FILOT_BASE_URL`** (Already Configured)
+2. **`TELEGRAM_BOT_USERNAME`** (Recommended)
+   - Your bot's username without @ symbol
+   - Helps users find and interact with your bot
+   - Example: `MyTradingBot`
+
+3. **`FILOT_BASE_URL`** (Already Configured)
    - Set to: `https://filotmicroservice.replit.app`
    - Public API - No authentication required
-   - Provides pool data and token information
+   - Provides authentic pool data and token information
 
-3. **`RAYDIUM_BASE_URL`** (Optional for live trading)
+4. **`HELIUS_API_KEY`** (Professional Solana Infrastructure)
+   - Professional-grade Solana RPC service
+   - Example: `d9e45146-8d6c-4e81-99e9-40ec7c8075b2`
+   - Provides reliable blockchain connectivity and transaction monitoring
+
+5. **`RAYDIUM_BASE_URL`** (Optional for live trading)
    - Your Raydium swap API endpoint
    - Example: `https://your-api-domain.com/api/raydium`
    - Needed only for actual transaction execution
 
-4. **`SOLANA_PRIVATE_KEY`** (Optional for live trading)
-   - Your Solana wallet private key
-   - Base58 encoded string
-   - Used for trade execution
-
 ### Optional Enhancement Keys
-4. **`OPENAI_API_KEY`** (Future AI features)
+6. **`ADMIN_CHAT_ID`** (Optional notifications)
+   - Your Telegram user ID for admin notifications
+   - Get from @userinfobot on Telegram
+
+7. **`NOTIFICATION_CHANNEL_ID`** (Optional broadcasting)
+   - Channel ID for broadcasting alerts
+   - For community notifications
+
+8. **`OPENAI_API_KEY`** (Future AI features)
    - Get from: OpenAI platform
    - For strategy optimization and learning
 
@@ -129,7 +143,7 @@ A fully autonomous Telegram trading bot for Raydium pools on Solana with intelli
 
 **Immediate Testing Available:**
 1. **Smoke Test**: Run `python utils/filot_client.py` to verify FiLot API connectivity
-2. **Environment Setup**: Add `TELEGRAM_TOKEN` to Replit secrets for bot activation
+2. **Environment Setup**: Add required secrets to Replit for bot activation
 3. **Start Bot**: Run `python main.py` with enhanced startup environment validation
 4. **Test Enhanced Features**: Use `/pools` with pagination, authentic data, and retry logic
 5. **Investment Flow**: Complete quote→execute workflow with real Raydium pool data
@@ -139,10 +153,11 @@ A fully autonomous Telegram trading bot for Raydium pools on Solana with intelli
 2. **Autonomous Alerts**: Enhanced subscription system with pool_id and mode targeting
 3. **Retry Mechanisms**: Exponential backoff for all API operations
 4. **Real-time Data**: All pool information from authentic FiLot microservice
+5. **Professional Infrastructure**: Helius RPC for enterprise-grade Solana connectivity
 
 ## Ready-to-Use Features
 
-### Available Immediately (TELEGRAM_TOKEN only)
+### Available Immediately (TELEGRAM_TOKEN + HELIUS_API_KEY)
 - Browse authentic Raydium pools with real TVL, APY, volume data
 - View detailed pool metrics and token information
 - Get real-time swap quotes using Raydium SDK data
@@ -150,12 +165,14 @@ A fully autonomous Telegram trading bot for Raydium pools on Solana with intelli
 - Autonomous monitoring and opportunity detection
 - User preference settings and portfolio tracking
 - Real-time notifications for high-yield opportunities
+- Professional blockchain connectivity through Helius
 
 ### Full Trading Mode (with RAYDIUM_BASE_URL)
 - Execute actual token swaps on Solana
 - One-click investments with real transaction confirmation
 - Live wallet balance checking and transfers
 - Complete trade execution with blockchain confirmation
+- Enterprise-grade transaction monitoring and reliability
 
 ### For Administrators
 - Real-time agent health monitoring
