@@ -203,8 +203,8 @@ python-dotenv==1.0.0
    - Add these secrets:
      - `TELEGRAM_TOKEN`: Get from @BotFather on Telegram
      - `TELEGRAM_BOT_USERNAME`: Your bot's username (without @)
+     - `HELIUS_API_KEY`: Your Helius API key for professional Solana connectivity
      - `FILOT_BASE_URL`: Already set to `https://filotmicroservice.replit.app`
-     - `SOLANA_PRIVATE_KEY`: Your Solana wallet private key (optional for testing)
 
 2. **Test API Connection:**
    ```bash
@@ -219,17 +219,19 @@ python-dotenv==1.0.0
 
 4. **Start Using Commands:**
    - `/pools` - Browse authentic Raydium pools with pagination
-   - `/invest poolId` - Invest in specific pools with real quotes
-   - `/subscribe poolId` - Enable autonomous alerts for specific pools
+   - `/invest` - Access investment interface with real quotes
+   - `/subscribe` - Enable autonomous opportunity alerts
+   - `/settings` - Customize your trading preferences
 
 ### How to Use Enhanced Features
 
-- **Pools Command**: Shows 5 authentic pools per page with real TVL/APY data
-- **Investment Flow**: Get real quotes → confirm amount → execute with retry logic
-- **Risk Management**: Automatic daily limit checking and position sizing
-- **Autonomous Mode**: Set pool subscriptions with demo/live modes
+- **Professional Infrastructure**: Helius RPC provides enterprise-grade Solana connectivity
+- **Pools Command**: Shows 5 authentic pools per page with real TVL/APY data from FiLot
+- **Investment Flow**: Get real quotes → confirm amount → execute with professional monitoring
+- **Risk Management**: Automatic daily limit checking and intelligent position sizing
+- **Autonomous Mode**: Set alerts for high-yield opportunities with confidence scoring
 
-The bot connects to authentic Raydium data immediately. All pool information, quotes, and risk assessments use real market data from the FiLot microservice.
+The bot uses authentic Raydium data through FiLot microservice and professional blockchain infrastructure through Helius for reliable, enterprise-grade trading operations.
 
 ## License
 
