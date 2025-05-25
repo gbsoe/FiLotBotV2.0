@@ -15,12 +15,17 @@ class Config:
     def __init__(self):
         # Required environment variables
         self.TELEGRAM_TOKEN: str = os.getenv("TELEGRAM_TOKEN", "")
+        self.TELEGRAM_BOT_USERNAME: str = os.getenv("TELEGRAM_BOT_USERNAME", "")
         self.FILOT_BASE_URL: str = os.getenv("FILOT_BASE_URL", "https://filotmicroservice.replit.app")
         self.RAYDIUM_BASE_URL: str = os.getenv("RAYDIUM_BASE_URL", "https://your-api-domain.com/api/raydium")
         self.SOLANA_PRIVATE_KEY: str = os.getenv("SOLANA_PRIVATE_KEY", "")
         
         # Optional environment variables
         self.OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
+        
+        # Admin/Channel IDs for notifications (optional)
+        self.ADMIN_CHAT_ID: str = os.getenv("ADMIN_CHAT_ID", "")
+        self.NOTIFICATION_CHANNEL_ID: str = os.getenv("NOTIFICATION_CHANNEL_ID", "")
         
         # Database configuration
         self.DATABASE_PATH: str = os.getenv("DATABASE_PATH", "bot_data.db")
@@ -42,8 +47,10 @@ class Config:
         """Validate required configuration parameters."""
         if not self.TELEGRAM_TOKEN:
             raise ValueError("TELEGRAM_TOKEN environment variable is required")
-        if not self.SOLANA_PRIVATE_KEY:
-            raise ValueError("SOLANA_PRIVATE_KEY environment variable is required")
+        
+        # Warn if bot username is not set (helpful for user instructions)
+        if not self.TELEGRAM_BOT_USERNAME:
+            print("⚠️  TELEGRAM_BOT_USERNAME not set - users will need to search for your bot manually")
     
     @property
     def is_openai_enabled(self) -> bool:

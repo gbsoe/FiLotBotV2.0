@@ -114,6 +114,7 @@ python main.py
 ```env
 # Essential (Required)
 TELEGRAM_TOKEN=your_telegram_bot_token_from_botfather
+TELEGRAM_BOT_USERNAME=your_bot_username_without_@
 
 # Pool Data API (Already Configured)
 FILOT_BASE_URL=https://filotmicroservice.replit.app
@@ -121,6 +122,10 @@ FILOT_BASE_URL=https://filotmicroservice.replit.app
 # Trading API (Optional - for live execution)
 RAYDIUM_BASE_URL=https://your-api-domain.com/api/raydium
 SOLANA_PRIVATE_KEY=your_solana_private_key
+
+# Admin/Channel IDs (Optional - for notifications)
+ADMIN_CHAT_ID=your_telegram_user_id
+NOTIFICATION_CHANNEL_ID=your_channel_id
 
 # AI Features (Optional)
 OPENAI_API_KEY=your_openai_api_key
@@ -194,8 +199,9 @@ python-dotenv==1.0.0
    - Go to your Replit project settings
    - Add these secrets:
      - `TELEGRAM_TOKEN`: Get from @BotFather on Telegram
+     - `TELEGRAM_BOT_USERNAME`: Your bot's username (without @)
      - `FILOT_BASE_URL`: Already set to `https://filotmicroservice.replit.app`
-     - `SOLANA_PRIVATE_KEY`: Your Solana wallet private key
+     - `SOLANA_PRIVATE_KEY`: Your Solana wallet private key (optional for testing)
 
 2. **Test API Connection:**
    ```bash
