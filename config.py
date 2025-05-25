@@ -18,6 +18,12 @@ class Config:
         self.TELEGRAM_BOT_USERNAME: str = os.getenv("TELEGRAM_BOT_USERNAME", "")
         self.FILOT_BASE_URL: str = os.getenv("FILOT_BASE_URL", "https://filotmicroservice.replit.app")
         self.RAYDIUM_BASE_URL: str = os.getenv("RAYDIUM_BASE_URL", "https://your-api-domain.com/api/raydium")
+        
+        # Helius RPC Configuration (Professional Solana infrastructure)
+        self.HELIUS_API_KEY: str = os.getenv("HELIUS_API_KEY", "")
+        self.HELIUS_RPC_URL: str = os.getenv("HELIUS_RPC_URL", "https://mainnet.helius-rpc.com")
+        
+        # Legacy (Optional - for backward compatibility)
         self.SOLANA_PRIVATE_KEY: str = os.getenv("SOLANA_PRIVATE_KEY", "")
         
         # Optional environment variables
@@ -51,6 +57,16 @@ class Config:
         # Warn if bot username is not set (helpful for user instructions)
         if not self.TELEGRAM_BOT_USERNAME:
             print("⚠️  TELEGRAM_BOT_USERNAME not set - users will need to search for your bot manually")
+    
+    def get_helius_rpc_url(self) -> str:
+        """Get the complete Helius RPC URL with API key."""
+        if self.HELIUS_API_KEY:
+            return f"{self.HELIUS_RPC_URL}/?api-key={self.HELIUS_API_KEY}"
+        return self.HELIUS_RPC_URL
+    
+    def is_helius_enabled(self) -> bool:
+        """Check if Helius RPC is properly configured."""
+        return bool(self.HELIUS_API_KEY)
     
     @property
     def is_openai_enabled(self) -> bool:

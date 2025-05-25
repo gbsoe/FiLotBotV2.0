@@ -119,9 +119,12 @@ TELEGRAM_BOT_USERNAME=your_bot_username_without_@
 # Pool Data API (Already Configured)
 FILOT_BASE_URL=https://filotmicroservice.replit.app
 
+# Solana RPC (Professional Infrastructure - Recommended)
+HELIUS_API_KEY=your_helius_api_key
+HELIUS_RPC_URL=https://mainnet.helius-rpc.com
+
 # Trading API (Optional - for live execution)
 RAYDIUM_BASE_URL=https://your-api-domain.com/api/raydium
-SOLANA_PRIVATE_KEY=your_solana_private_key
 
 # Admin/Channel IDs (Optional - for notifications)
 ADMIN_CHAT_ID=your_telegram_user_id
@@ -133,7 +136,7 @@ OPENAI_API_KEY=your_openai_api_key
 
 ### Trading Modes
 - **Data-Only Mode**: View authentic pools and get real quotes (TELEGRAM_TOKEN only)
-- **Full Trading Mode**: Execute actual transactions (requires RAYDIUM_BASE_URL + SOLANA_PRIVATE_KEY)
+- **Full Trading Mode**: Execute actual transactions (requires RAYDIUM_BASE_URL + HELIUS_API_KEY)
 - **Simulation Mode**: Test all features safely with real data (default setting)
 
 ### Testing & Development
